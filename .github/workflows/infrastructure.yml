@@ -81,6 +81,7 @@ jobs:
         working-directory: dest
         run: |
           git ls-remote
+          git remote set-url origin https://$(git config user.name)name@github.com/${{ github.repository_owner }}/$(basename ${{ github.repository }}).git
           git push -u origin $BRANCH_NAME
 
       - name: Push commit

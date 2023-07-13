@@ -61,6 +61,7 @@ jobs:
       - name: Copy files
         shell: bash
         run: |
+          ls
           for subFolder in $(find $FOLDER_SRC/$FOLDER/ -type d); do
             mkdir -p $FOLDER_DEST/${subFolder:$(echo $FOLDER_SRC | wc -c)}
           done

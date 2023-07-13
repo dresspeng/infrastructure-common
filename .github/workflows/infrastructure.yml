@@ -92,6 +92,8 @@ jobs:
 
       - name: Create pull request
         if: steps.newFiles.outputs.hasNewFiles == 'true'
+        env:
+          COMMITS: ${{ toJSON(github.event.commits) }}
         run: |
           curl -L \
             -X POST \
@@ -106,7 +108,7 @@ jobs:
                 #### Bumps\n \
                 <details><summary>Sha</summary>${{ github.event.after }}</details> \
                 <details><summary>Commits</summary>\
-                $(for commit in $(${{ toJSON(github.event.commits) }} | jq -rc '.[]'); do \
+                $(for commit in $(echo $COMMITS | jq -rc '.[]'); do \
                   echo "* [$(echo $(echo $commit | jq -rc '.id') | cut -c-8)]($(echo $commit | jq -rc '.url')) author: $(echo $commit | jq -rc '.author.name'), committer $(echo $commit | jq -rc '.committer.name'), message $(echo $commit | jq -rc '.message')\n"; \
                   done) \
                 </details> \

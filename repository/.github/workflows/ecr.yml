@@ -61,7 +61,7 @@ jobs:
           echo IMAGE_KEEP_COUNT=$IMAGE_KEEP_COUNT >> $GITHUB_ENV
 
           DOCKERFILES=$(${{ vars.CONTAINER_REGISTRY_JSON_CMD }})
-          echo DOCKERFILES=$DOCKERFILES 
+          echo DOCKERFILES=$DOCKERFILES
           echo DOCKERFILES=$DOCKERFILES >> $GITHUB_ENV
 
       - name: Setup AWS CLI

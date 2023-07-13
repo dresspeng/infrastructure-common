@@ -9,6 +9,8 @@ on:
 env:
   FOLDER: repository
   BRANCH_PREFIX: infrabot
+  FOLDER_SRC: src
+  FOLDER_DEST: dest
 jobs:
   copy-files:
     runs-on: ubuntu-latest
@@ -22,17 +24,17 @@ jobs:
             scraper-frontend,
           ]
     steps:
-      - name: Checkout src
+      - name: Checkout $FOLDER_SRC
         uses: actions/checkout@v3
         with:
-          path: src
+          path: $FOLDER_SRC
           ref: ${{ github.head_ref || github.ref_name }} # trunk
           persist-credentials: false
 
-      - name: Checkout dest
+      - name: Checkout $FOLDER_DEST
         uses: actions/checkout@v3
         with:
-          path: dest
+          path: $FOLDER_DEST
           ref: ${{ github.head_ref || github.ref_name }} # trunk
           repository: ${{ github.repository_owner }}/${{ matrix.repository_name }}
           token: ${{ secrets.GH_INFRA_COMMON_TOKEN }}
@@ -41,7 +43,7 @@ jobs:
 
       - name: Close old branches
         shell: bash
-        working-directory: dest
+        working-directory: $FOLDER_DEST
         run: |
           BRANCH_NAME=$BRANCH_PREFIX/$(basename ${{ github.repository }})/$FOLDER-${{ github.head_ref || github.ref_name }}
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
@@ -52,22 +54,22 @@ jobs:
 
       - name: Create new local branch
         shell: bash
-        working-directory: dest
+        working-directory: $FOLDER_DEST
         run: |
           git checkout -b $BRANCH_NAME
 
       - name: Copy files
         shell: bash
         run: |
-          for subFolder in $(find ./$FOLDER/ -type d); do
-            mkdir -p dest/${subFolder:2}
+          for subFolder in $(find $FOLDER_SRC/$FOLDER/ -type d); do
+            mkdir -p $FOLDER_DEST/${subFolder:$(echo $FOLDER_SRC | wc -c)}
           done
-          cp -r src/$FOLDER/* dest/
+          cp -r $FOLDER_SRC/$FOLDER/* $FOLDER_DEST/
 
       - name: Commit files
         id: newFiles
         shell: bash
-        working-directory: dest
+        working-directory: $FOLDER_DEST
         run: |
           git add -A
           git status --porcelain   
@@ -81,7 +83,7 @@ jobs:
       - name: Set git credentials
         if: steps.newFiles.outputs.hasNewFiles == 'true'
         shell: bash
-        working-directory: dest
+        working-directory: $FOLDER_DEST
         run: |
           git config --global user.name ${{ vars.GH_INFRA_COMMON_USER_NAME }}
           git config --global user.email ${{ vars.GH_INFRA_COMMON_EMAIL }}
@@ -90,14 +92,14 @@ jobs:
       - name: Publish branch
         if: steps.newFiles.outputs.hasNewFiles == 'true'
         shell: bash
-        working-directory: dest
+        working-directory: $FOLDER_DEST
         run: |
           git push -u origin $BRANCH_NAME
 
       - name: Push commit
         if: steps.newFiles.outputs.hasNewFiles == 'true'
         shell: bash
-        working-directory: dest
+        working-directory: $FOLDER_DEST
         run: |
           git commit -m "maint: Updated $FOLDER files from ${{ github.repository_owner }}/$(basename ${{ github.repository }})@${{ github.head_ref || github.ref_name }}"
           git push

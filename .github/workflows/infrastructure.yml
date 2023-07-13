@@ -59,7 +59,10 @@ jobs:
       - name: Copy files
         shell: bash
         run: |
-          cp -r src/$FOLDER/ dest/
+          for subFolder in $(find ./$FOLDER/ -type d); do
+            mkdir -p dest/${subFolder:2}
+          done
+          cp -r src/$FOLDER/* dest/
 
       - name: Commit files
         id: newFiles
@@ -80,7 +83,6 @@ jobs:
         shell: bash
         working-directory: dest
         run: |
-          # git remote set-url origin https://oauth2:${{ secrets.GH_INFRA_COMMON_TOKEN }}@github.com/${{ github.repository_owner }}/$(basename ${{ github.repository }}).git
           git config --global user.name ${{ vars.GH_INFRA_COMMON_USER_NAME }}
           git config --global user.email ${{ vars.GH_INFRA_COMMON_EMAIL }}
           git ls-remote

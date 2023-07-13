@@ -95,6 +95,19 @@ jobs:
         env:
           COMMITS: ${{ toJSON(github.event.commits) }}
         run: |
+          echo '{ \
+          "title":"Bump nfrastructure common $FOLDER ${{ github.head_ref || github.ref_name }}", \
+          "body":" \
+            #### Bumps\n \
+            <details><summary>Sha</summary>${{ github.event.after }}</details> \
+            <details><summary>Commits</summary>\
+            $(for commit in $(echo $COMMITS | jq -rc '.[]'); do echo "* [$(echo $(echo $commit | jq -rc '.id') | cut -c-8)]($(echo $commit | jq -rc '.url')) author: $(echo $commit | jq -rc '.author.name'), committer $(echo $commit | jq -rc '.committer.name'), message $(echo $commit | jq -rc '.message')\n"; done) \
+            </details> \
+            <details><summary>Compare</summary>${{ github.event.compare }}</details> \
+          ", \
+          "head":"$BRANCH_NAME", \
+          "base":"${{ github.head_ref || github.ref_name }}" \
+          }'
           curl -L \
             -X POST \
             --fail \
@@ -108,9 +121,7 @@ jobs:
                 #### Bumps\n \
                 <details><summary>Sha</summary>${{ github.event.after }}</details> \
                 <details><summary>Commits</summary>\
-                $(for commit in $(echo $COMMITS | jq -rc '.[]'); do \
-                  echo "* [$(echo $(echo $commit | jq -rc '.id') | cut -c-8)]($(echo $commit | jq -rc '.url')) author: $(echo $commit | jq -rc '.author.name'), committer $(echo $commit | jq -rc '.committer.name'), message $(echo $commit | jq -rc '.message')\n"; \
-                  done) \
+                $(for commit in $(echo $COMMITS | jq -rc '.[]'); do echo "* [$(echo $(echo $commit | jq -rc '.id') | cut -c-8)]($(echo $commit | jq -rc '.url')) author: $(echo $commit | jq -rc '.author.name'), committer $(echo $commit | jq -rc '.committer.name'), message $(echo $commit | jq -rc '.message')\n"; done) \
                 </details> \
                 <details><summary>Compare</summary>${{ github.event.compare }}</details> \
               ", \

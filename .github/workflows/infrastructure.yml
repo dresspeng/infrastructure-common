@@ -1,12 +1,14 @@
 name: PR
 
 on:
+  workflow_dispatch:
   push:
     branches: [trunk]
     paths: [repository/**]
 
 env:
   FOLDER: repository
+  BRANCH_PREFIX: infrabot
 jobs:
   copy-files:
     runs-on: ubuntu-latest
@@ -41,7 +43,7 @@ jobs:
         shell: bash
         working-directory: dest
         run: |
-          BRANCH_NAME=$(basename ${{ github.repository }})/$FOLDER-${{ github.head_ref || github.ref_name }}
+          BRANCH_NAME=$BRANCH_PREFIX/$(basename ${{ github.repository }})/$FOLDER-${{ github.head_ref || github.ref_name }}
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           for branch in $(git branch -r | grep origin/$BRANCH_NAME); do
             echo "Deleting branch $branch"

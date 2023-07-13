@@ -5,7 +5,7 @@ on:
     inputs:
       environment:
         type: environment
-        description: "The environment to deploy to"
+        description: "Github environment name"
         required: false
         default: trunk
       event_name:

@@ -80,7 +80,7 @@ jobs:
         shell: bash
         working-directory: dest
         run: |
-          git ls-remote --exit-code --heads origin $BRANCH_NAME
+          git ls-remote
           git push -u origin $BRANCH_NAME
 
       - name: Push commit

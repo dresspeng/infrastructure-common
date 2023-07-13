@@ -42,8 +42,10 @@ jobs:
         working-directory: dest
         run: |
           BRANCH_NAME=$(basename ${{ github.repository }})/$FOLDER-${{ github.head_ref || github.ref_name }}
-          echo BRANCH_NAME=$BRANCH_NAME >> $GITHUB_ENV
+          echo "BRANCH_NAME=$BRANCH_NAME"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           for branch in $(git branch -r | grep origin/$BRANCH_NAME); do
+            echo "Deleting branch $branch"
             git push origin --delete ${branch:6}
           done
 
@@ -94,6 +96,7 @@ jobs:
         run: |
           curl -L \
             -X POST \
+            --fail \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GH_INFRA_COMMON_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -112,4 +115,4 @@ jobs:
               ", \
               "head":"$BRANCH_NAME", \
               "base":"${{ github.head_ref || github.ref_name }}" \
-            }'
+            }' | grep HTTP

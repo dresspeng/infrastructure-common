@@ -1,4 +1,4 @@
-name: Repository
+name: Docker registry
 
 on:
   workflow_dispatch:

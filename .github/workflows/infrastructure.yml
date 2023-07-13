@@ -61,12 +61,15 @@ jobs:
       - name: Copy files
         shell: bash
         run: |
-          ls $FOLDER_SRC/$FOLDER
+          ls $FOLDER_SRC/$FOLDER -la
           for subFolder in $(find $FOLDER_SRC/$FOLDER/ -type d); do
             echo creating $FOLDER_DEST/${subFolder:$(echo $FOLDER_SRC/$FOLDER | wc -c)}
             mkdir -p $FOLDER_DEST/${subFolder:$(echo $FOLDER_SRC/$FOLDER | wc -c)}
           done
-          cp -r $FOLDER_SRC/$FOLDER/* $FOLDER_DEST/
+          for file in $(find $FOLDER_SRC/$FOLDER/ -type f); do
+            echo copying $FOLDER_DEST/${file:$(echo $FOLDER_SRC/$FOLDER | wc -c)}
+            cp $file $FOLDER_DEST/${file:$(echo $FOLDER_SRC/$FOLDER | wc -c)}
+          done
 
       - name: Commit files
         id: newFiles

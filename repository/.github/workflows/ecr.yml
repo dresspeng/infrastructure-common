@@ -8,7 +8,7 @@ on:
         description: "The environment to deploy to"
         required: false
         default: trunk
-      event:
+      event_name:
         type: choice
         description: "Type of event"
         required: true
@@ -16,21 +16,17 @@ on:
           - push
           - create
           - delete
-      image-tag:
-        description: "Image tag for worker image"
-        required: false
-        default: "latest"
   push:
     branches-ignore: [dependabot/**, infrabot/**]
   delete:
 
 env:
-  ECR_PRIVACY: public
+  ECR_PRIVACY: ${{ vars.CONTAINER_REGISTRY_PRIVACY }}
   IMAGE_TAG: ${{ github.sha }}
   ORGANIZATION_NAME: ${{ github.repository_owner }}
   BRANCH_NAME: ${{ github.event_name == 'delete' && github.event.ref || (github.head_ref || github.ref_name) }}
   LOG_file: log.out
-  DEFAULT_BRANCH_NAME: trunk
+  DEFAULT_BRANCH_NAME: ${{ github.event.repository.default_branch }}
   ARCHITECTURES: \[\"x86-64\"\] # ARM   ARM 64   x86   x86-64
   OS: \[\"Linux\"\]
   IMAGE_KEEP_COUNT_DEFAULT: 3
@@ -40,7 +36,7 @@ jobs:
   ecr-publish:
     name: ECR publish steps
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || 'trunk' }}
+    environment: ${{ inputs.environment || github.event.repository.default_branch }}
     env:
       AWS_REGION_NAME: ${{ vars.AWS_REGION_NAME }}
       AWS_PROFILE_NAME: ${{ vars.AWS_PROFILE_NAME }}
@@ -57,7 +53,7 @@ jobs:
       - name: Set env
         run: |
           echo "event_name=${{ github.event_name }}"
-          echo "inputs.event=${{ inputs.event }}"
+          echo "inputs.event_name=${{ inputs.event_name }}"
 
           REPOSITORY_NAME=$(basename ${{ github.repository }})
           echo "REPOSITORY_NAME: $REPOSITORY_NAME"
@@ -65,13 +61,7 @@ jobs:
           IMAGE_KEEP_COUNT=$(if [[ $BRANCH_NAME == $DEFAULT_BRANCH_NAME ]]; then echo $IMAGE_KEEP_COUNT_DEFAULT; else echo $IMAGE_KEEP_COUNT_NON_DEFAULT; fi)
           echo "IMAGE_KEEP_COUNT: $IMAGE_KEEP_COUNT"
 
-          ECR_REPOSITORY_NAME=$(echo $ORGANIZATION_NAME-$REPOSITORY_NAME-$BRANCH_NAME-bin | tr A-Z a-z)
-          echo ECR_REPOSITORY_NAME=$ECR_REPOSITORY_NAME
-
-          VARIANT=$(if [[ $ECR_PRIVACY == private ]]; then echo $ECR_REGISTRY_PRIVATE_URI/$ECR_REPOSITORY_NAME; else echo $ECR_REGISTRY_PUBLIC_URI/$ECR_REGISTRY_PUBLIC_ALIAS/$ECR_REPOSITORY_NAME; fi)
-          echo VARIANT=$VARIANT
-
-          DOCKERFILES=$(${{ vars.DOCKERFILES_JSON_CMD }})
+          DOCKERFILES=$(${{ vars.CONTAINER_REGISTRY_JSON_CMD }})
           echo "DOCKERFILES: $DOCKERFILES"
 
           echo REPOSITORY_NAME=$REPOSITORY_NAME     >> $GITHUB_ENV
@@ -214,16 +204,16 @@ jobs:
           }
           func_ecr () {
             # create/push/delete
-            if [[ "${{ github.event_name }}" == "create" || ("${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.event }}" == "create") ]]; then
+            if [[ "${{ github.event_name }}" == "create" || ("${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.event_name }}" == "create") ]]; then
               func_ecr_create
-            elif [[ "${{ github.event_name }}" == "push" || ("${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.event }}" == "push") ]]; then
+            elif [[ "${{ github.event_name }}" == "push" || ("${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.event_name }}" == "push") ]]; then
               func_ecr_push
-            elif [[ "${{ github.event_name }}" == "delete" || ("${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.event }}" == "delete") ]]; then
+            elif [[ "${{ github.event_name }}" == "delete" || ("${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.event_name }}" == "delete") ]]; then
               echo -e '\033[43mDeleting repository in ECR\033[0m'
               aws ecr delete-repository --repository-name $ECR_REPOSITORY_NAMESITORY_NAME --force
             else
               echo -e '\033[41mError\033[0m'
-              echo Error: event do not match, event_name ${{ github.event_name }}, inputs.event ${{ inputs.event }}
+              echo Error: event do not match, event_name ${{ github.event_name }}, inputs.event_name ${{ inputs.event_name }}
               exit 100
             fi
           }
@@ -243,7 +233,7 @@ jobs:
               dockerfile_extension=$([[ "$DOCKERFILE_PATH" = *.* ]] && echo "-${DOCKERFILE_PATH##*.}" || echo '')
             fi
             echo dockerfile_extension:: $dockerfile_extension
-            ECR_REPOSITORY_NAMESITORY_NAME="$(echo $ORGANIZATION_NAME-$REPOSITORY_NAME-$BRANCH_NAME$dockerfile_extension | tr A-Z a-z)"
+            ECR_REPOSITORY_NAMESITORY_NAME="$(echo $REPOSITORY_NAME-$BRANCH_NAME$dockerfile_extension | tr A-Z a-z)"
             echo ECR_REPOSITORY_NAMESITORY_NAME:: $ECR_REPOSITORY_NAMESITORY_NAME
 
             # docker build args

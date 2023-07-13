@@ -81,8 +81,8 @@ jobs:
         working-directory: dest
         run: |
           git remote set-url origin https://oauth2:${{ secrets.GH_INFRA_COMMON_TOKEN }}@github.com/${{ github.repository_owner }}/$(basename ${{ github.repository }}).git
-          git config --global user.name ${{ vars.GH_INFRA_COMMON_USER_NAME }}
-          git config --global user.email ${{ vars.GH_INFRA_COMMON_EMAIL }}
+          # git config --global user.name ${{ vars.GH_INFRA_COMMON_USER_NAME }}
+          # git config --global user.email ${{ vars.GH_INFRA_COMMON_EMAIL }}
           git ls-remote
 
       - name: Publish branch
@@ -91,6 +91,8 @@ jobs:
         working-directory: dest
         run: |
           git ls-remote
+          git config user.name
+          git config user.email
           git push -u origin $BRANCH_NAME
 
       - name: Push commit

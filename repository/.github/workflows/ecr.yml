@@ -54,15 +54,14 @@ jobs:
         run: |
           REPOSITORY_NAME=$(basename ${{ github.repository }})
           echo "REPOSITORY_NAME: $REPOSITORY_NAME"
+          echo REPOSITORY_NAME=$REPOSITORY_NAME     >> $GITHUB_ENV
 
           IMAGE_KEEP_COUNT=$(if [[ $BRANCH_NAME == $DEFAULT_BRANCH_NAME ]]; then echo $IMAGE_KEEP_COUNT_DEFAULT; else echo $IMAGE_KEEP_COUNT_NON_DEFAULT; fi)
           echo "IMAGE_KEEP_COUNT: $IMAGE_KEEP_COUNT"
+          echo IMAGE_KEEP_COUNT=$IMAGE_KEEP_COUNT   >> $GITHUB_ENV
 
           DOCKERFILES=$(${{ vars.CONTAINER_REGISTRY_JSON_CMD }})
           echo "DOCKERFILES: $DOCKERFILES"
-
-          echo REPOSITORY_NAME=$REPOSITORY_NAME     >> $GITHUB_ENV
-          echo IMAGE_KEEP_COUNT=$IMAGE_KEEP_COUNT   >> $GITHUB_ENV
           echo DOCKERFILES=$DOCKERFILES             >> $GITHUB_ENV
 
       - name: Setup AWS CLI

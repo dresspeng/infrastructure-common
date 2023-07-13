@@ -24,17 +24,17 @@ jobs:
             scraper-frontend,
           ]
     steps:
-      - name: Checkout $FOLDER_SRC
+      - name: Checkout ${{ env.FOLDER_SRC }}
         uses: actions/checkout@v3
         with:
-          path: $FOLDER_SRC
+          path: $${{ env.FOLDER_SRC }}
           ref: ${{ github.head_ref || github.ref_name }} # trunk
           persist-credentials: false
 
-      - name: Checkout $FOLDER_DEST
+      - name: Checkout ${{ env.FOLDER_DEST }}
         uses: actions/checkout@v3
         with:
-          path: $FOLDER_DEST
+          path: ${{ env.FOLDER_DEST }}
           ref: ${{ github.head_ref || github.ref_name }} # trunk
           repository: ${{ github.repository_owner }}/${{ matrix.repository_name }}
           token: ${{ secrets.GH_INFRA_COMMON_TOKEN }}
@@ -43,7 +43,7 @@ jobs:
 
       - name: Close old branches
         shell: bash
-        working-directory: $FOLDER_DEST
+        working-directory: ${{ env.FOLDER_DEST }}
         run: |
           BRANCH_NAME=$BRANCH_PREFIX/$(basename ${{ github.repository }})/$FOLDER-${{ github.head_ref || github.ref_name }}
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
@@ -54,7 +54,7 @@ jobs:
 
       - name: Create new local branch
         shell: bash
-        working-directory: $FOLDER_DEST
+        working-directory: ${{ env.FOLDER_DEST }}
         run: |
           git checkout -b $BRANCH_NAME
 
@@ -70,7 +70,7 @@ jobs:
       - name: Commit files
         id: newFiles
         shell: bash
-        working-directory: $FOLDER_DEST
+        working-directory: ${{ env.FOLDER_DEST }}
         run: |
           git add -A
           git status --porcelain   
@@ -84,7 +84,7 @@ jobs:
       - name: Set git credentials
         if: steps.newFiles.outputs.hasNewFiles == 'true'
         shell: bash
-        working-directory: $FOLDER_DEST
+        working-directory: ${{ env.FOLDER_DEST }}
         run: |
           git config --global user.name ${{ vars.GH_INFRA_COMMON_USER_NAME }}
           git config --global user.email ${{ vars.GH_INFRA_COMMON_EMAIL }}
@@ -93,14 +93,14 @@ jobs:
       - name: Publish branch
         if: steps.newFiles.outputs.hasNewFiles == 'true'
         shell: bash
-        working-directory: $FOLDER_DEST
+        working-directory: ${{ env.FOLDER_DEST }}
         run: |
           git push -u origin $BRANCH_NAME
 
       - name: Push commit
         if: steps.newFiles.outputs.hasNewFiles == 'true'
         shell: bash
-        working-directory: $FOLDER_DEST
+        working-directory: ${{ env.FOLDER_DEST }}
         run: |
           git commit -m "maint: Updated $FOLDER files from ${{ github.repository_owner }}/$(basename ${{ github.repository }})@${{ github.head_ref || github.ref_name }}"
           git push

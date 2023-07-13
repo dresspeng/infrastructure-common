@@ -28,7 +28,7 @@ env:
   LOG_file: log.out
   DEFAULT_BRANCH_NAME: ${{ github.event.repository.default_branch }}
   ARCHITECTURES: \[\"x86-64\"\] # ARM   ARM 64   x86   x86-64
-  OS: \[\"Linux\"\]
+  OS: \[\"Linux\"\] # Windows
   IMAGE_KEEP_COUNT_DEFAULT: 3
   IMAGE_KEEP_COUNT_NON_DEFAULT: 1
 

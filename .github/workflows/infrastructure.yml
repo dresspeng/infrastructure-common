@@ -59,7 +59,8 @@ jobs:
       - name: Copy files
         shell: bash
         run: |
-          cp -r src/$FOLDER/* dest/
+          ls -a
+          cp -r $FOLDER/* dest/
 
       - name: Commit files
         id: newFiles

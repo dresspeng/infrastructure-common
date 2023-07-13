@@ -22,14 +22,14 @@ jobs:
             scraper-frontend,
           ]
     steps:
-      - name: Checkout
+      - name: Checkout src
         uses: actions/checkout@v3
         with:
           path: src
           ref: ${{ github.head_ref || github.ref_name }} # trunk
           persist-credentials: false
 
-      - name: Checkout
+      - name: Checkout dest
         uses: actions/checkout@v3
         with:
           path: dest
@@ -80,6 +80,7 @@ jobs:
         shell: bash
         working-directory: dest
         run: |
+          git ls-remote --exit-code --heads origin $BRANCH_NAME
           git push -u origin $BRANCH_NAME
 
       - name: Push commit

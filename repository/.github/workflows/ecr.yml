@@ -34,7 +34,7 @@ env:
 
 jobs:
   ecr-publish:
-    name: ECR publish steps
+    name: ECR publish
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || github.event.repository.default_branch }}
     env:

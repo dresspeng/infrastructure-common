@@ -75,13 +75,20 @@ jobs:
             echo "hasNewFiles=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Set git credentials
+        if: steps.newFiles.outputs.hasNewFiles == 'true'
+        shell: bash
+        working-directory: dest
+        run: |
+          git config --global user.name ${{ vars.GH_INFRA_COMMON_USER_NAME }}
+          git config --global user.email ${{ vars.GH_INFRA_COMMON_EMAIL }}
+          git ls-remote
+
       - name: Publish branch
         if: steps.newFiles.outputs.hasNewFiles == 'true'
         shell: bash
         working-directory: dest
         run: |
-          git ls-remote
-          git remote set-url origin https://$(git config user.name)name@github.com/${{ github.repository_owner }}/$(basename ${{ github.repository }}).git
           git push -u origin $BRANCH_NAME
 
       - name: Push commit
@@ -89,8 +96,6 @@ jobs:
         shell: bash
         working-directory: dest
         run: |
-          git config --global user.name ${{ vars.GH_INFRA_COMMON_USER_NAME }}
-          git config --global user.email ${{ vars.GH_INFRA_COMMON_EMAIL }}
           git commit -m "maint: Updated $FOLDER files from ${{ github.repository_owner }}/$(basename ${{ github.repository }})@${{ github.head_ref || github.ref_name }}"
           git push
 

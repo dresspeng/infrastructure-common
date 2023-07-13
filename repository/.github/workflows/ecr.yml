@@ -10,7 +10,7 @@ on:
         default: trunk
       event_name:
         type: choice
-        description: "Type of event name"
+        description: "Type of action event name"
         required: true
         options:
           - push

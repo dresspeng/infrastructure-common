@@ -52,9 +52,6 @@ jobs:
 
       - name: Set env
         run: |
-          echo "event_name=${{ github.event_name }}"
-          echo "inputs.event_name=${{ inputs.event_name }}"
-
           REPOSITORY_NAME=$(basename ${{ github.repository }})
           echo "REPOSITORY_NAME: $REPOSITORY_NAME"
 

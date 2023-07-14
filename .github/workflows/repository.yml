@@ -18,8 +18,7 @@ jobs:
             # scraper-frontend,
           ]
     with:
-      folder: FOLDER
+      folder: repository
       file_suffix: "suffff"
       repository_name: ${{ matrix.repository_name }}
-
     secrets: inherit

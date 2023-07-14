@@ -11,11 +11,12 @@ jobs:
     uses: ./.github/workflows/pr.yml
     strategy:
       matrix:
-        repository_name: [
-            # infrastructure-modules,
+        repository_name:
+          [
+            infrastructure-modules,
             infrastructure-live,
-            # scraper-backend,
-            # scraper-frontend,
+            scraper-backend,
+            scraper-frontend,
           ]
     with:
       folder: repository

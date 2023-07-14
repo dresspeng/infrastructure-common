@@ -7,7 +7,7 @@ on:
     paths: [repository/**]
 
 jobs:
-  run-backend:
+  pr:
     uses: ./.github/workflows/pr.yml
     strategy:
       matrix:
@@ -20,6 +20,6 @@ jobs:
           ]
     with:
       folder: repository
-      file_suffix: "suffff"
+      file_suffix: ""
       repository_name: ${{ matrix.repository_name }}
     secrets: inherit

@@ -1,13 +1,22 @@
 name: PR
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [trunk]
-    paths: [repository/**]
+  workflow_call:
+    inputs:
+      folder:
+        type: string
+        description: "the folder to copy from"
+        required: true
+      file_suffix:
+        type: string
+        description: "add an extension to the copied files, e.g. `_suffix`"
+        required: false
+      repository_names:
+        type: string
+        description: "comma separated list of repository names to copy to `\\[repo-name\\]`"
+        required: true
 
 env:
-  FOLDER: repository
   BRANCH_PREFIX: infrabot
   FOLDER_SRC: src
   FOLDER_DEST: dest
@@ -16,13 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        repository_name:
-          [
-            infrastructure-modules,
-            infrastructure-live,
-            scraper-backend,
-            scraper-frontend,
-          ]
+        repository_name: ${{ inputs.repository_names }}
     steps:
       - name: Checkout ${{ env.FOLDER_SRC }}
         uses: actions/checkout@v3
@@ -45,7 +48,7 @@ jobs:
         shell: bash
         working-directory: ${{ env.FOLDER_DEST }}
         run: |
-          BRANCH_NAME=$BRANCH_PREFIX/$(basename ${{ github.repository }})/$FOLDER-${{ github.head_ref || github.ref_name }}
+          BRANCH_NAME=$BRANCH_PREFIX/$(basename ${{ github.repository }})/${{ inputs.folder }}-${{ github.head_ref || github.ref_name }}
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           for branch in $(git branch -r | grep origin/$BRANCH_NAME); do
             echo "Deleting branch $branch"
@@ -61,16 +64,30 @@ jobs:
       - name: Copy files
         shell: bash
         run: |
-          ls $FOLDER_SRC/$FOLDER -la
-          for subFolder in $(find $FOLDER_SRC/$FOLDER/ -type d); do
-            echo creating $FOLDER_DEST/${subFolder:$(echo $FOLDER_SRC/$FOLDER | wc -c)}
-            mkdir -p $FOLDER_DEST/${subFolder:$(echo $FOLDER_SRC/$FOLDER | wc -c)}
+          ls $FOLDER_SRC/${{ inputs.folder }} -la
+          for subFolder in $(find $FOLDER_SRC/${{ inputs.folder }}/ -type d); do
+            echo creating $FOLDER_DEST/${subFolder:$(echo $FOLDER_SRC/${{ inputs.folder }} | wc -c)}
+            mkdir -p $FOLDER_DEST/${subFolder:$(echo $FOLDER_SRC/${{ inputs.folder }} | wc -c)}
           done
-          for file in $(find $FOLDER_SRC/$FOLDER/ -type f); do
-            echo copying $FOLDER_DEST/${file:$(echo $FOLDER_SRC/$FOLDER | wc -c)}
-            cp $file $FOLDER_DEST/${file:$(echo $FOLDER_SRC/$FOLDER | wc -c)}
+          for path in $(find $FOLDER_SRC/${{ inputs.folder }}/ -type f); do
+            dir=$(dirname "$path")
+            filename=$(basename "$path")
+            if [[ $filename =~ .*\..* ]]; then
+              extension=".${filename##*.}"
+            else
+              extension=""
+            fi
+            dirname="$(dirname $path)"
+            echo dirname $dirname
+            echo filename $filename
+            echo extension $extension
+            new_filename="${dirname}/${filename}${suffix}${extension}"
+
+            echo copying $FOLDER_DEST/${new_filename:$(echo $FOLDER_SRC/${{ inputs.folder }} | wc -c)}
+            cp $path $FOLDER_DEST/${new_filename:$(echo $FOLDER_SRC/${{ inputs.folder }} | wc -c)}${{ inputs.file_suffix }}
           done
 
+      # deletion not supported yet
       - name: Commit files
         id: newFiles
         shell: bash
@@ -106,7 +123,7 @@ jobs:
         shell: bash
         working-directory: ${{ env.FOLDER_DEST }}
         run: |
-          git commit -m "maint: Updated $FOLDER files from ${{ github.repository_owner }}/$(basename ${{ github.repository }})@${{ github.head_ref || github.ref_name }}"
+          git commit -m "maint: Updated ${{ inputs.folder }} files from ${{ github.repository_owner }}/$(basename ${{ github.repository }})@${{ github.head_ref || github.ref_name }}"
           git push
 
       - name: Create pull request
@@ -122,8 +139,8 @@ jobs:
             https://api.github.com/repos/${{ github.repository_owner }}/${{ matrix.repository_name }}/pulls \
             -d @- << EOF
             {
-              "title":"Bumps infrastructure common $FOLDER ${{ github.head_ref || github.ref_name }}",
-              "body":"#### Bumps infrastructure common $FOLDER ${{ github.head_ref || github.ref_name }}
+              "title":"Bumps infrastructure common ${{ inputs.folder }} ${{ github.head_ref || github.ref_name }}",
+              "body":"#### Bumps infrastructure common ${{ inputs.folder }} ${{ github.head_ref || github.ref_name }}
               <details><summary>Sha</summary>${{ github.event.after }}</details>
               <details><summary>Commits</summary>
               <ul>

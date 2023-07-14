@@ -1,0 +1,17 @@
+name: Repository
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [trunk]
+    paths: [repository/**]
+
+jobs:
+  run-backend:
+    uses: ./.github/workflows/pr.yml
+    with:
+      folder: FOLDER
+      file_suffix: "suffff"
+      repository_names: '\[ infrastructure-modules, infrastructure-live, scraper-backend, scraper-frontend \]'
+
+    secrets: inherit

@@ -9,9 +9,17 @@ on:
 jobs:
   run-backend:
     uses: ./.github/workflows/pr.yml
+    strategy:
+      matrix:
+        repository_name: [
+            # infrastructure-modules,
+            infrastructure-live,
+            # scraper-backend,
+            # scraper-frontend,
+          ]
     with:
       folder: FOLDER
       file_suffix: "suffff"
-      repository_names: '\[ infrastructure-modules, infrastructure-live, scraper-backend, scraper-frontend \]'
+      repository_name: ${{ matrix.repository_name }}
 
     secrets: inherit

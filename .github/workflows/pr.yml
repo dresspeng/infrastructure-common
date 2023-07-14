@@ -11,9 +11,9 @@ on:
         type: string
         description: "add an extension to the copied files, e.g. `_suffix`"
         required: false
-      repository_names:
+      repository_name:
         type: string
-        description: "comma separated list of repository names to copy to `\\[repo-name\\]`"
+        description: "github repository name"
         required: true
 
 env:
@@ -23,9 +23,6 @@ env:
 jobs:
   copy-files:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        repository_name: ${{ inputs.repository_names }}
     steps:
       - name: Checkout ${{ env.FOLDER_SRC }}
         uses: actions/checkout@v3
@@ -39,7 +36,7 @@ jobs:
         with:
           path: ${{ env.FOLDER_DEST }}
           ref: ${{ github.head_ref || github.ref_name }} # trunk
-          repository: ${{ github.repository_owner }}/${{ matrix.repository_name }}
+          repository: ${{ github.repository_owner }}/${{ inputs.repository_name }}
           token: ${{ secrets.GH_INFRA_COMMON_TOKEN }}
           fetch-depth: 0
           persist-credentials: true
@@ -136,7 +133,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GH_INFRA_COMMON_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/${{ github.repository_owner }}/${{ matrix.repository_name }}/pulls \
+            https://api.github.com/repos/${{ github.repository_owner }}/${{ inputs.repository_name }}/pulls \
             -d @- << EOF
             {
               "title":"Bumps infrastructure common ${{ inputs.folder }} ${{ github.head_ref || github.ref_name }}",

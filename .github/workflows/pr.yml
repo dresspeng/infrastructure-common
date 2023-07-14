@@ -78,10 +78,10 @@ jobs:
             echo dirname $dirname
             echo filename ${filename%.*}
             echo extension $extension
-            new_filename="${dirname}/${filename%.*}${suffix}${extension}"
+            new_filename="${dirname}/${filename%.*}${{ inputs.file_suffix }}${extension}"
 
-            echo copying $FOLDER_DEST/${new_filename:$(echo $FOLDER_SRC/${{ inputs.folder }} | wc -c)}
-            cp $path $FOLDER_DEST/${new_filename:$(echo $FOLDER_SRC/${{ inputs.folder }} | wc -c)}${{ inputs.file_suffix }}
+            echo copying $path -> $FOLDER_DEST/${new_filename:$(echo $FOLDER_SRC/${{ inputs.folder }} | wc -c)}
+            cp $path $FOLDER_DEST/${new_filename:$(echo $FOLDER_SRC/${{ inputs.folder }} | wc -c)}
           done
 
       # deletion not supported yet

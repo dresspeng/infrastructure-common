@@ -171,8 +171,8 @@ jobs:
               # add repository catalog data
               json_string=$(
                 jq --null-input \
-                  --argjson architectures $ARCHITECTURES \
-                  --argjson os $OS \
+                  --argjson architectures ${{ env.ARCHITECTURES }} \
+                  --argjson os ${{ env.OS }} \
                   --arg aboutText "" \
                   --arg usageText "" \
                   --arg description "" \

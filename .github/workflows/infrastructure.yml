@@ -1,4 +1,4 @@
-name: Repository
+name: Infra Makefile
 
 on:
   workflow_dispatch:

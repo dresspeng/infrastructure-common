@@ -1,4 +1,4 @@
-name: Repository
+name: Infra Docker
 
 on:
   workflow_dispatch:

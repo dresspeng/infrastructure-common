@@ -1,0 +1,18 @@
+name: Repository
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [trunk]
+    paths: [infrastructure/**]
+
+jobs:
+  pr:
+    uses: ./.github/workflows/pr.yml
+    strategy:
+      matrix:
+        repository_name: [infrastructure-modules, infrastructure-live]
+    with:
+      folder: infrastructure-docker
+      repository_name: ${{ matrix.repository_name }}
+    secrets: inherit

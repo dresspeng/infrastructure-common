@@ -17,7 +17,7 @@ jobs:
             infrastructure-live,
             scraper-backend,
             scraper-frontend,
-            VTON-HD,
+            VITON-HD,
           ]
     with:
       folder: repository

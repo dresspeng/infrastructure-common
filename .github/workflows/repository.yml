@@ -18,6 +18,7 @@ jobs:
             scraper-backend,
             scraper-frontend,
             VITON-HD,
+            tryon-frontend,
           ]
     with:
       folder: repository

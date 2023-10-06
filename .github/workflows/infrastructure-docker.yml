@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [trunk]
-    paths: [infrastructure-docker/**]
+    paths:
+      [infrastructure-docker/**, .github/workflows/infrastructure-docker.yml]
 
 jobs:
   pr:

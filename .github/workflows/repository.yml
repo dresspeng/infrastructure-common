@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [trunk]
-    paths: [repository/**]
+    paths: [repository/**, .github/workflows/repository.yml]
 
 jobs:
   pr:

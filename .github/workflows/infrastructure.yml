@@ -11,7 +11,8 @@ jobs:
     uses: ./.github/workflows/pr.yml
     strategy:
       matrix:
-        repository_name: [infrastructure-modules, infrastructure-live]
+        repository_name:
+          [infrastructure-live, infrastructure-projects, infrastructure-modules]
     with:
       folder: infrastructure
       file_suffix: "infra"

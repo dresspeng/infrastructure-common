@@ -13,8 +13,9 @@ jobs:
       matrix:
         repository_name:
           [
-            infrastructure-modules,
             infrastructure-live,
+            infrastructure-projects,
+            infrastructure-modules,
             scraper-backend,
             scraper-frontend,
             VITON-HD,
